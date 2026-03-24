@@ -210,7 +210,8 @@ This repository reflects my focus on:
 
 **Abhinav Singh**
 
-* 🥋 International Taekwondo Athlete
+* 🗣️ International MUN winner and Public Speaker
+* 🏢 Co-Founder and President-MAARS International
 * 🧠 Tech Enthusiast & Builder
 * 🌍 Focused on impact through technology
 
