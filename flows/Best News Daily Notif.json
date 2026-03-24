@@ -1,0 +1,211 @@
+{
+  "name": "Best News Daily Notif",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bb0a4700-a818-4de6-8f77-a28b2cdf9df0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://hacker-news.firebaseio.com/v0/topstories.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "73389a13-37a8-491e-b7b3-64fa73535e96",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const topId =items[0]\n\nreturn {\"hopper\": topId}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "dcca8775-f975-4b37-bc34-6b438aa2352b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "=https://hacker-news.firebaseio.com/v0/item/{{$json[\"hopper\"][\"json\"]}}.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "8968a5a7-bdf9-4527-bd5b-1f89136e7371",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a friendly tech teacher.\nSummarize the following Hacker News story in very simple beginner-friendly language.\nTitle: {{$json[\"title\"]}}\nURL: {{$json[\"url\"]}}\nAlso explain:\n- Why this matters\n- Who should care\n- One key takeaway\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        816,
+        0
+      ],
+      "id": "9fbeae10-695d-449a-ad66-f1040e8f7967",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        784,
+        192
+      ],
+      "id": "91299c06-0bf7-4882-a920-ace9ceb9a9f3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        0
+      ],
+      "id": "a1cd12c7-ac17-459c-8d18-1dba6e5eace0",
+      "name": "Send a message",
+      "webhookId": "c97aa326-335e-484c-a782-c7dfdda2aca2"
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7c879927-9e59-4a74-a084-aa13e6962784",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3936c8e4e15381341d02e69d700d4316b47b4c9fb543d64692acc5d332a2146f"
+  },
+  "id": "44N25Xz92bB1tjqY",
+  "tags": []
+}

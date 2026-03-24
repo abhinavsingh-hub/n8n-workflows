@@ -1,0 +1,319 @@
+{
+  "name": "Email Summariser",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {}
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "861a690d-642c-47db-a568-8b32a64f062b",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TcqVoDlaifnJdZiI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5d4297a6-31a8-454a-99a5-cc2e7eb906aa",
+              "name": "subject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "fd9143eb-f652-427a-91c4-d7ab268c46f3",
+              "name": "body",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f97e694f-24ef-410d-aec4-4827ed945ee0",
+              "name": "user_name",
+              "value": "={{ $json.from.value[0].name }}",
+              "type": "string"
+            },
+            {
+              "id": "6cb9528a-2178-4528-8340-b5da970c6239",
+              "name": "user_email",
+              "value": "={{ $json.from.value[0].address }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b8d63306-bde6-4054-ab2f-3ed6d4731c26",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        528,
+        224
+      ],
+      "id": "11553d77-ae27-4240-812d-eb94e0f1457b",
+      "name": "Groq Chat Model"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an assistant that analyzes emails and extracts actionable tasks.\nEven if the email contains storytelling or informal conversation, you must identify any requests, commitments, reminders, or action items mentioned anywhere in the email.\n\nIf tasks are explicitly numbered or listed, extract them exactly as written.\nIf tasks are implied, convert them into clear action items.\nNever ignore tasks unless absolutely none exist.\n\nAlways return valid JSON only.\n\nImproved User Prompt\n\nSummarize the following email in 3 to 4 concise lines focusing on meaningful updates.\n\nExtract all actionable tasks mentioned in the email.\nInclude tasks even if they appear in casual or informal context.\n\nReturn strictly in this JSON format:\n\n{\n\"summary\": \"\",\n\"tasks\": [\"\", \"\"]\n}\n\nEmail Subject:\n{{$json[\"subject\"]}}\n\nEmail Body:\n{{$json[\"body\"]}}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "8bf9339c-35f3-46cb-8d99-389891b98bd9",
+      "name": "Summarizing"
+    },
+    {
+      "parameters": {
+        "jsCode": "let a = JSON.parse($input.first().json.text)\nif(a.tasks.length > 0){\n  let str=\"\";\n  for(let i=0; i<a.tasks.length; i++){\n    str += \"- \" + a.tasks[i] + \"\\n\"\n  }\n  a.tasks = str;\n} else {\n  a.tasks = \"No task from this email\"\n}\nreturn a;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "2fe1be02-3b56-49f5-a483-d1d627a8dfeb",
+      "name": "Task Parsing"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "118zKDe0XN4nNFv7e5IY4t64_Aey-1gi6H-6Qi9pBIPU",
+          "mode": "list",
+          "cachedResultName": "Email Summary",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/118zKDe0XN4nNFv7e5IY4t64_Aey-1gi6H-6Qi9pBIPU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/118zKDe0XN4nNFv7e5IY4t64_Aey-1gi6H-6Qi9pBIPU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "From",
+              "displayName": "From",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tasks",
+              "displayName": "Tasks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "2efc9df8-3ba3-406c-b5ba-9c628f33ee91",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ABlJEFFMQz0rWIP8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "223e4a6c-b23b-49cc-bc84-a11ec321cc49",
+              "name": "Timestamp",
+              "value": "={{ $('Gmail Trigger').item.json.headers.date }}",
+              "type": "string"
+            },
+            {
+              "id": "ba0a950e-6b0c-4c0d-afad-59dd7473e989",
+              "name": "From",
+              "value": "={{ $('Gmail Trigger').item.json.from.value[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "cf9e081a-4f2f-430f-8a06-7a3f8db828a0",
+              "name": "Summary",
+              "value": "={{ $json.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "3055ddab-fbb9-40c1-a551-0b0255325185",
+              "name": "Tasks",
+              "value": "={{ $json.tasks }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "44c22bc0-5946-4a87-993f-89a6288e4459",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Summarizing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarizing",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarizing": {
+      "main": [
+        [
+          {
+            "node": "Task Parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task Parsing": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "38fbfaa9-46a5-41c6-b005-d7bed8f8e67f",
+  "meta": {
+    "instanceId": "3936c8e4e15381341d02e69d700d4316b47b4c9fb543d64692acc5d332a2146f"
+  },
+  "id": "2m8xyLP05lmt0YwM",
+  "tags": []
+}

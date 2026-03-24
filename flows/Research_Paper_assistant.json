@@ -1,0 +1,549 @@
+{
+  "name": "My workflow 5",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -80
+      ],
+      "id": "35d342df-5dc9-4478-b09c-9cc33fed0766",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e85e7fca-a704-46b3-a332-3885932dcddd",
+              "name": "research_interest",
+              "value": "Healthcare Analytics",
+              "type": "string"
+            },
+            {
+              "id": "0a9cd2a2-c0ca-430b-8ea0-cfe745dc0c6f",
+              "name": "difficulty_level",
+              "value": "Medium",
+              "type": "string"
+            },
+            {
+              "id": "f9e5bb16-f92e-4276-b2c3-f11ec8b78190",
+              "name": "time_available_weeks",
+              "value": 8,
+              "type": "number"
+            },
+            {
+              "id": "64368c2a-5fff-4fd4-97af-373f315e00a2",
+              "name": "roll_no",
+              "value": 123,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "04e128c1-fd53-4b83-9df4-33ff827d9d40",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://api.sampleapis.com/futurama/episodes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "bd31f692-8eda-423a-9b02-56b88b33cf04",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst foai = items\n  .slice(0, 20)\n  .map(item => ({\n    title: item.json.title,\n    desc: item.json.desc\n  }));\n\nreturn [\n  {\n    json: {\n      foai\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -80
+      ],
+      "id": "94d4f045-aeb1-4ef7-b4d6-158ce4de883d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Research Topic Discovery Agent.\n\nYour job is to generate exactly 3 research/project ideas based on:\n- student's interest{{ $('Edit Fields').item.json.research_interest }}\n- difficulty level requested{{ $('Edit Fields').item.json.difficulty_level }}\n- time available{{ $('Edit Fields').item.json.time_available_weeks }}\n- inspiration sources provided{{ $json.foai }}\n\nThe inspiration sources come from episode titles and descriptions. You may creatively derive inspiration from them.{{ $json.foai }}\nEach idea must contain:\n\ntitle: short research/project title\ndescription: 2-3 sentence explanation\ninspiration_sources: array of strings referencing titles from the inspiration data\nfeasibility: integer 1-10\nnovelty: integer 1-10\ndifficulty: integer 1-10\ntime_fit: integer 1-10\nscore : number\n\ncompute a score using the formula:\n\nscore = (feasibility * (0.4 + (roll_no / 5000))) + (novelty * 0.3) + (time_fit * 0.3)\n\nAfter scoring the ideas:\n- select the idea with the highest score\n- return its title as selected_topic\n- provide a short reason (1-2 sentences)\n\nImportant Rules:\n- Generate exactly 3 ideas\n- Scores must be correctly calculated\n- selected_topic must exactly match one idea title\n- Return ONLY valid JSON\n\nOutput format:\n\n{\n \"ideas\":[\n  {\n   \"title\":\"\",\n   \"description\":\"\",\n   \"inspiration_sources\":[],\n   \"feasibility\":0,\n   \"novelty\":0,\n   \"difficulty\":0,\n   \"time_fit\":0,\n   \"score\":0\n  },\n  {\n   \"title\":\"\",\n   \"description\":\"\",\n   \"inspiration_sources\":[],\n   \"feasibility\":0,\n   \"novelty\":0,\n   \"difficulty\":0,\n   \"time_fit\":0,\n   \"score\":0\n  },\n  {\n   \"title\":\"\",\n   \"description\":\"\",\n   \"inspiration_sources\":[],\n   \"feasibility\":0,\n   \"novelty\":0,\n   \"difficulty\":0,\n   \"time_fit\":0,\n   \"score\":0\n  }\n ],\n \"selected_topic\":\"\",\n \"reason\":\"\"\n} \n\nexample-output- \n{\n \"ideas\":[\n  {\n   \"title\":\"AI Based Cryogenic Time Capsule Simulator\",\n   \"description\":\"A simulation tool that models how cryogenic preservation could affect human revival in future societies. The project explores time displacement concepts using AI-driven predictions.\",\n   \"inspiration_sources\":[\"Space Pilot 3000\"],\n   \"feasibility\":7,\n   \"novelty\":8,\n   \"difficulty\":6,\n   \"time_fit\":7,\n   \"score\":6.93\n  },\n  {\n   \"title\":\"Planetary Tourism Recommendation System\",\n   \"description\":\"An AI recommendation engine that suggests futuristic tourism experiences based on user personality and planetary characteristics.\",\n   \"inspiration_sources\":[\"The Series Has Landed\"],\n   \"feasibility\":8,\n   \"novelty\":7,\n   \"difficulty\":5,\n   \"time_fit\":8,\n   \"score\":7.42\n  },\n  {\n   \"title\":\"Human-Robot Social Interaction Predictor\",\n   \"description\":\"A machine learning model predicting human emotional responses to robot personalities in futuristic societies.\",\n   \"inspiration_sources\":[\"Space Pilot 3000\"],\n   \"feasibility\":6,\n   \"novelty\":9,\n   \"difficulty\":7,\n   \"time_fit\":6,\n   \"score\":6.74\n  }\n ],\n \"selected_topic\":\"Planetary Tourism Recommendation System\",\n \"reason\":\"It has the highest combined feasibility and time-fit score while maintaining good novelty, making it achievable within the given constraints.\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        240,
+        144
+      ],
+      "id": "befd8f35-163d-4b90-bc79-21ff830f90b0",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        176,
+        352
+      ],
+      "id": "384d6a1b-7db7-4880-9936-d4de6b4d93ac",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw LLM output\nconst raw = $json.text;\n\n// Remove markdown code block markers\nconst cleaned = raw.replace(/```json|```/g, '').trim();\n\n// Convert string to JSON\nconst parsed = JSON.parse(cleaned);\n\nconst roll_no = $json.roll_no ?? 0;\n\n// Recalculate score deterministically\nparsed.ideas.forEach(idea => {\n  idea.score =\n    (idea.feasibility * (0.4 + (roll_no / 5000))) +\n    (idea.novelty * 0.3) +\n    (idea.time_fit * 0.3);\n});\n\n// Sort ideas by score (highest first)\nparsed.ideas.sort((a, b) => b.score - a.score);\n\n// Select the best idea\nparsed.selected_topic = parsed.ideas[0].title;\n\n// Optional: overwrite reason if needed\nparsed.reason = `Selected because it has the highest computed score (${parsed.ideas[0].score.toFixed(2)}).`;\n\nreturn [\n  {\n    json: parsed\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        144
+      ],
+      "id": "568b4e58-08f1-4c88-95c4-7256b214be30",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a Research Planning Agent.\n\nYour job is to generate a structured research plan for a student project.\n\nInputs:\n- selected_topic{{ $json.selected_topic }}\n- idea_description\n- difficulty level{{ $('Edit Fields').item.json.difficulty_level }}\n- time available (weeks){{ $('Edit Fields').item.json.time_available_weeks }}\n- user constraints\n\nCreate a weekly research plan that helps the student complete the project within the available time.\n\nRules:\n- Divide the project into weekly milestones.\n- Each week must contain clear objectives and tasks.\n- Tasks should be practical and achievable.\n- The total number of weeks must equal the {{ $('Edit Fields').item.json.time_available_weeks }}.\n- Focus on research, implementation, testing, and final presentation.\n\nReturn ONLY valid JSON.\nDo NOT use markdown formatting or code blocks.\n\nOutput format:\n\n{\n \"research_plan\":[\n  {\n   \"week\":1,\n   \"goal\":\"\",\n   \"tasks\":[]\n  }\n ]\n} ",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        800,
+        144
+      ],
+      "id": "3d98ef74-9ef8-4ee1-b7bb-952bcddd7d6e",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        816,
+        320
+      ],
+      "id": "c63dfac5-e703-4697-a551-50db99cee69b",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// get raw string output from LLM\nconst raw = $json.text;\n\n// parse JSON string\nconst parsed = JSON.parse(raw);\n\n// return structured object\nreturn [\n  {\n    json: parsed\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        144
+      ],
+      "id": "9d93627a-cc1d-4ef8-afb9-82e2d24c6880",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Iw9PwzC6uX6CASz0Cq_qllRZB63baApNQYOxYN-A9Tk",
+          "mode": "list",
+          "cachedResultName": "Reasearch idea",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Iw9PwzC6uX6CASz0Cq_qllRZB63baApNQYOxYN-A9Tk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Iw9PwzC6uX6CASz0Cq_qllRZB63baApNQYOxYN-A9Tk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now }}",
+            "roll_no": "={{ $('Edit Fields').item.json.roll_no }}",
+            "research_interest": "={{ $('Edit Fields').item.json.research_interest }}",
+            "difficulty_level": "={{ $('Edit Fields').item.json.difficulty_level }}",
+            "time_available_weeks": "={{ $('Edit Fields').item.json.time_available_weeks }}",
+            "selected_idea_title": "={{ $('Code in JavaScript1').item.json.selected_topic }}",
+            "selected_idea_feasibility": "={{ $('Code in JavaScript1').item.json.ideas[0].feasibility }}",
+            "selected_idea_novelty": "={{ $('Code in JavaScript1').item.json.ideas[0].novelty }}",
+            "selected_difficulty": "={{ $('Code in JavaScript1').item.json.ideas[0].difficulty }}",
+            "selected_idea_score": "={{ $('Code in JavaScript1').item.json.ideas[0].score }}",
+            "research_plan": "={{ $json.research_plan.map(w => `Week ${w.week}: ${w.goal}\\nTasks: ${w.tasks.join(', ')}`).join('\\n\\n') }}",
+            "idea2_title": "={{ $('Code in JavaScript1').item.json.ideas[1].title }}",
+            "idea2_desc": "={{ $('Code in JavaScript1').item.json.ideas[1].description }}",
+            "idea3_title": "={{ $('Code in JavaScript1').item.json.ideas[2].title }}",
+            "idea3_desc": "={{ $('Code in JavaScript1').item.json.ideas[2].description }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "roll_no",
+              "displayName": "roll_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "research_interest",
+              "displayName": "research_interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "difficulty_level",
+              "displayName": "difficulty_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "time_available_weeks",
+              "displayName": "time_available_weeks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "selected_idea_title",
+              "displayName": "selected_idea_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "selected_idea_feasibility",
+              "displayName": "selected_idea_feasibility",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "selected_idea_novelty",
+              "displayName": "selected_idea_novelty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "selected_difficulty",
+              "displayName": "selected_difficulty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "selected_idea_score",
+              "displayName": "selected_idea_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "research_plan",
+              "displayName": "research_plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "idea2_title",
+              "displayName": "idea2_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "idea2_desc",
+              "displayName": "idea2_desc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "idea3_title",
+              "displayName": "idea3_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "idea3_desc",
+              "displayName": "idea3_desc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        144
+      ],
+      "id": "bca824fa-aa71-4efc-98c6-fc18bc0efcb9",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ABlJEFFMQz0rWIP8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "abhinav.tekron@gmail.com",
+        "subject": "=Research Plan Generated – {{ $('Code in JavaScript1').item.json.selected_topic }}",
+        "message": "=<h2>Research Project Summary</h2>\n\n<b>Research Interest:</b>  {{ $('Edit Fields').item.json.research_interest }}<br>\n<b>Difficulty Level:</b> {{ $('Edit Fields').item.json.difficulty_level }}<br>\n<b>Time Available (Weeks):</b>  {{ $('Edit Fields').item.json.time_available_weeks }}<br><br>\n\n<h3>Selected Research Idea</h3>\n\n<b>Title:</b> {{ $('Code in JavaScript1').item.json.selected_topic }} <br>\n<b>Feasibility:</b> {{ $('Code in JavaScript1').item.json.ideas[0].feasibility }} / 10 <br>\n<b>Novelty:</b> {{ $('Code in JavaScript1').item.json.ideas[0].novelty }} / 10 <br>\n<b>Difficulty:</b> {{ $('Code in JavaScript1').item.json.ideas[0].difficulty }} / 10 <br>\n<b>Score:</b> {{ $('Code in JavaScript1').item.json.ideas[0].score }} <br><br>\n\n<h3>Research Plan</h3>\n\n{{ $('Code in JavaScript2').item.json.research_plan\n.map(w => `Week ${w.week}: ${w.goal}<br>• ${w.tasks.join('<br>• ')}`)\n.join('<br><br>') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        448
+      ],
+      "id": "75f70df0-c90b-4fac-a2c1-e4a2173eee7d",
+      "name": "Send a message",
+      "webhookId": "a8653192-bb49-45b7-b859-3aebbe7c4f14",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TcqVoDlaifnJdZiI",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8538da84-a422-4e24-a9e5-c4c28d276912",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3936c8e4e15381341d02e69d700d4316b47b4c9fb543d64692acc5d332a2146f"
+  },
+  "id": "tYKIAGCkzKOz4Ggi",
+  "tags": []
+}

@@ -1,0 +1,721 @@
+{
+  "name": "SWOT analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        -64
+      ],
+      "id": "a21342cc-6f99-4ce8-bdd2-7d1d585314f4",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.url }}",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        144,
+        48
+      ],
+      "id": "f07bbaa2-7f63-46a8-98f6-be1f051bd1ed",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MpCa2uuzI8vDJ3iG",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "22226d55-4825-4b8c-8160-91629a689ea9",
+              "name": "url",
+              "value": "https://drive.google.com/file/d/1roTCOdk73v8E3iFwRaS3UTeyS4hyKK2v/view?fbclid=PARlRTSAQdKL5leHRuA2FlbQIxMABzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAae0Z5lbDxwceSYs2I1C_i2oFIiFX-QYM5j2qu1KNfK_PoATOCrBHkRgKfcRSA_aem_xdtvevqpsKIyaId0UPaigQ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        48
+      ],
+      "id": "65a9e71e-733d-4a4b-b397-212072ebd333",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        48
+      ],
+      "id": "5c5223ee-f438-413a-abc5-93749319b126",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -224
+      ],
+      "id": "2c0c938f-b4cf-4beb-91a2-d68108be8e8d",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -208
+      ],
+      "id": "c99fb44d-25e4-4bd7-b802-5120e2633ff2",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.text || \"\";\n\nconst strengths = [];\nconst weaknesses = [];\nconst opportunities = [];\nconst threats = [];\n\nlet currentSection = null;\n\n// split lines\nconst lines = raw.split(\"\\n\");\n\nfor (let line of lines) {\n  line = line.trim();\n\n  if (/strength/i.test(line)) {\n    currentSection = \"strengths\";\n    continue;\n  }\n\n  if (/weakness/i.test(line)) {\n    currentSection = \"weaknesses\";\n    continue;\n  }\n\n  if (/opportunit/i.test(line)) {\n    currentSection = \"opportunities\";\n    continue;\n  }\n\n  if (/threat/i.test(line)) {\n    currentSection = \"threats\";\n    continue;\n  }\n\n  // extract numbered points\n  if (/^\\d+\\./.test(line)) {\n    const cleaned = line\n      .replace(/^\\d+\\.\\s*/, \"\")\n      .replace(/\\*\\*/g, \"\")\n      .split(\":\")[0]\n      .trim();\n\n    if (currentSection === \"strengths\") strengths.push(cleaned);\n    if (currentSection === \"weaknesses\") weaknesses.push(cleaned);\n    if (currentSection === \"opportunities\") opportunities.push(cleaned);\n    if (currentSection === \"threats\") threats.push(cleaned);\n  }\n}\n\nreturn [{\n  json: {\n    strengths,\n    weaknesses,\n    opportunities,\n    threats\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        288
+      ],
+      "id": "e73f66a6-5268-4c83-ba9d-0f71e00bb8dc",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.text || \"\";\n\n// bigger chunks = fewer LLM calls\nconst chunkSize = 5000;\nconst overlap = 300;\n\nconst chunks = [];\n\nfor (let i = 0; i < text.length; i += chunkSize - overlap) {\n  chunks.push({\n    chunk: text.slice(i, i + chunkSize)\n  });\n}\n\nreturn chunks.map(c => ({ json: c }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -64
+      ],
+      "id": "f32b3aa6-4443-420f-88b6-f3994985d31c",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a financial analyst.\n\nFrom the provided financial report text extr\n{{ $json.chunk }}\nFocus on:\n- Revenue trends\n- Profit margins\n- Debt levels\n- Cash flow\n- Market risks\n- Growth opportunities\n- Key financial metrics\n\nReturn structured JSON:\n\n{\n \"company_summary\":\"\",\n \"financial_health\":\"\",\n \"key_metrics\":[]\n} ",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        720,
+        -64
+      ],
+      "id": "59b951fd-8fbf-4bb4-b3bd-6f0cf84573bc",
+      "name": "financial signals agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.text || \"\";\n\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\n\nif (!match) {\n  return [{ json: { signals: [] } }];\n}\n\nreturn [{\n  json: JSON.parse(match[0])\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        160
+      ],
+      "id": "68ab7583-7db7-422a-a19f-4b383359ee39",
+      "name": "signal parser"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        -368
+      ],
+      "id": "7064187b-2f1d-4494-b261-e792e1b48a94",
+      "name": "Wait",
+      "webhookId": "53a74679-e267-4fa9-9b00-f075f5eeef4b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allSignals = [];\n\nfor (const item of $input.all()) {\n  const signals = item.json.signals || [];\n  allSignals.push(...signals);\n}\n\nreturn [{\n  json: {\n    signals: allSignals\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        416
+      ],
+      "id": "338f7e5b-570f-4956-a75f-dcfbf8455433",
+      "name": "merge signals"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a financial strategy analyst.\n\nUsing the extracted financial data, create a SWOT analysis.\n{{ $json.company_summary }}{{ $json.financial_health }}{{ $json.key_metrics }}\nReturn JSON:\n\n{\n \"strengths\":[],\n \"weaknesses\":[],\n \"opportunities\":[],\n \"threats\":[]\n} ",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1056,
+        -48
+      ],
+      "id": "82755893-ff15-4166-97bd-1a50648d2c36",
+      "name": "SWOT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior financial analyst.\n\nUsing the extracted financial signals, generate structured financial insights.\n\nReturn JSON:\n\n{\n \"company_summary\":\"\",\n \"financial_health\":\"\",\n \"key_metrics\":[]\n}\n\nSignals:\n{{ $json.signals }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        784,
+        432
+      ],
+      "id": "7e594c72-be72-4406-b00d-3868bece7924",
+      "name": "Financial Insight Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        784,
+        624
+      ],
+      "id": "ea02abfb-6c42-4f9c-b5bb-c261b5b42082",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.text || \"\";\n\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\n\nif (!match) {\n  return [{ json: { signals: [] } }];\n}\n\nreturn [{\n  json: JSON.parse(match[0])\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        160
+      ],
+      "id": "8af7dda8-e18e-44fb-b4c8-99fa5e551461",
+      "name": "signal parser1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an investment advisor.\n\nUsing the financial insights and SWOT analysis, decide whether this company is a good investment.\n\nReturn JSON:\n\n{\n \"investment_decision\":\"INVEST / HOLD / AVOID\",\n \"confidence\":0,\n \"reasoning\":\"\"\n}\n\nFinancial Health:\n{{ $json.financial_health }}\n\nSWOT:\n{{ $json.strengths }}\n{{ $json.weaknesses }}\n{{ $json.opportunities }}\n{{ $json.threats }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1376,
+        224
+      ],
+      "id": "453992da-d1bb-4b3a-b887-a956e48cdd79",
+      "name": "Investment Decision"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        -96
+      ],
+      "id": "0a425060-e049-416e-bab7-13697a39e777",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a financial reviewer.\n\nEvaluate the investment decision.\n\nReturn JSON:\n\n{\n \"improvement_needed\": false,\n \"feedback\": \"\",\n \"final_decision\":\"\"\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1744,
+        208
+      ],
+      "id": "3ef9a10c-3bf8-4667-8774-cabdcfb13901",
+      "name": "Financial Reviewer"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -96
+      ],
+      "id": "03de933e-2a69-44d3-be8e-b2166f841328",
+      "name": "Groq Chat Model4",
+      "credentials": {
+        "groqApi": {
+          "id": "dPVtWNag8RVFMt11",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "default",
+        "title": "Financelper"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        608
+      ],
+      "id": "9ba990d0-4eca-4dba-aabf-07a99e28c596",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "AKjkQkQQK8SjcrnX",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.text || \"\";\n\n// Extract JSON block\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\n\nif (!match) {\n  return [{\n    json: {\n      error: \"No JSON found in investment output\",\n      raw_output: raw\n    }\n  }];\n}\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(match[0]);\n} catch (err) {\n  return [{\n    json: {\n      error: \"Investment JSON parsing failed\",\n      raw_output: match[0]\n    }\n  }];\n}\n\n// Return clean structured output\nreturn [{\n  json: {\n    investment_decision: parsed.investment_decision || \"\",\n    confidence: parsed.confidence || 0,\n    reasoning: parsed.reasoning || \"\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        432
+      ],
+      "id": "505bb88a-771b-4382-b56b-172d23f717b7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.text || \"\";\n\n// Extract JSON\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\n\nif (!match) {\n  return [{\n    json: {\n      error: \"No JSON found in reflection output\",\n      raw_output: raw\n    }\n  }];\n}\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(match[0]);\n} catch (err) {\n  return [{\n    json: {\n      error: \"Reflection JSON parsing failed\",\n      raw_output: match[0]\n    }\n  }];\n}\n\n// Structured result\nreturn [{\n  json: {\n    improvement_needed: parsed.improvement_needed ?? false,\n    feedback: parsed.feedback || \"\",\n    final_decision: parsed.final_decision || \"\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        208
+      ],
+      "id": "6a9e639f-ffcb-40ea-8cc8-593a40d2bb28",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "investment",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7a53ed13-d821-4645-b46a-ae3a1c427d18"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2e45af86-3e93-4a13-830f-134f8b90cf99",
+                    "leftValue": "investment",
+                    "rightValue": "false",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1744,
+        576
+      ],
+      "id": "0ad6879f-7076-4429-8072-b70b31ee089e",
+      "name": "Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "financial signals agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SWOT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Investment Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "financial signals agent": {
+      "main": [
+        [
+          {
+            "node": "signal parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "signal parser": {
+      "main": [
+        [
+          {
+            "node": "merge signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "financial signals agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge signals": {
+      "main": [
+        [
+          {
+            "node": "Financial Insight Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SWOT": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Insight Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Insight Agent": {
+      "main": [
+        [
+          {
+            "node": "signal parser1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "signal parser1": {
+      "main": [
+        [
+          {
+            "node": "SWOT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Investment Decision",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Investment Decision": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Reviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Financial Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Investment Decision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6d2177a0-623b-4694-a8f2-78e14b03fab7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3936c8e4e15381341d02e69d700d4316b47b4c9fb543d64692acc5d332a2146f"
+  },
+  "id": "ax9NJfVY25RFj7j3",
+  "tags": []
+}
