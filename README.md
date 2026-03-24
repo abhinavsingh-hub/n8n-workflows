@@ -101,10 +101,12 @@ User → Webhook → n8n → API/AI Processing → Output
 
 **Generates structured strategic analysis.**
 
+![alt text](image.png)
+
 * Input any topic/business
 * Outputs SWOT breakdown
 * Useful for decision-making
-
+* Sample Output - https://docs.google.com/document/d/10vTmWxExCWurydQwCx4qUcNkhJ8xF3KVbNZw5XjQt8s/edit?usp=sharing
 ---
 
 ### 🎯 Study Plan Customization
