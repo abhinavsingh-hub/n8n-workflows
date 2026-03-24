@@ -99,9 +99,9 @@ User → Webhook → n8n → API/AI Processing → Output
   <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" width="80"/>
 </p>
 
-**Generates structured strategic analysis.**
-
 ![alt text](image.png)
+
+**Generates structured strategic analysis.**
 
 * Input any topic/business
 * Outputs SWOT breakdown
